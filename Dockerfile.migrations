@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+
+COPY src/Stackbuld.ProductOrdering.Api/*.csproj ./src/Stackbuld.ProductOrdering.Api/
+COPY src/Stackbuld.ProductOrdering.Application/*.csproj ./src/Stackbuld.ProductOrdering.Application/
+COPY src/Stackbuld.ProductOrdering.Domain/*.csproj ./src/Stackbuld.ProductOrdering.Domain/
+COPY src/Stackbuld.ProductOrdering.Infrastructure/*.csproj ./src/Stackbuld.ProductOrdering.Infrastructure/
+
+RUN dotnet restore src/Stackbuld.ProductOrdering.Api/Stackbuld.ProductOrdering.Api.csproj
+
+COPY . .
+
+RUN dotnet tool install --global dotnet-ef --version 8.0.0
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+WORKDIR /app/src/Stackbuld.ProductOrdering.Api
+
+CMD ["dotnet", "ef", "database", "update"]

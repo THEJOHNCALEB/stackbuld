@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: stackbuld-postgres
+    environment:
+      POSTGRES_DB: StackbuldProductOrdering
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stackbuld-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=StackbuldProductOrdering;Username=postgres;Password=postgres
+    ports:
+      - "5001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrations
+    container_name: stackbuld-migrations
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=StackbuldProductOrdering;Username=postgres;Password=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["dotnet", "ef", "database", "update"]
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: stackbuld-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@stackbuld.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

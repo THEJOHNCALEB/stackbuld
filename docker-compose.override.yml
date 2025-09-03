@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=StackbuldProductOrdering;Username=postgres;Password=postgres;Port=5432
+    volumes:
+      - ./src:/app/src:ro
+    ports:
+      - "5001:8080"
+
+  postgres:
+    environment:
+      - POSTGRES_DB=StackbuldProductOrdering
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@stackbuld.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+    ports:
+      - "5050:80"
+
+volumes:
+  postgres_data:
